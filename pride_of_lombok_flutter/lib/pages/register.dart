@@ -20,7 +20,7 @@ class _RegisterState extends State<Register> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Image.asset(
-                  "assets/images/logo/logo.png",
+                  "/images/logo/logo.png",
                   width: 37,
                   height: 32,
                 

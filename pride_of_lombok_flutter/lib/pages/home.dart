@@ -79,26 +79,95 @@ class _HomeState extends State<Home> {
                   physics: ScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 200,
-                      childAspectRatio: 3 / 2,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 0.9,
+                      mainAxisSpacing: 10
                   ),
                   itemCount: myProducts.length,
                   itemBuilder: (BuildContext ctx, index) {
-                    return Container(
-                      alignment: Alignment.center,
-                      child: Text(myProducts[index]["name"]),
-                      decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(15)),
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: InkWell(
+                        onTap: (){print(myProducts[index]['name']);},
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              height: 95,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage("/images/marchendise/anyaman_ketak.jpg"),
+                                  fit: BoxFit.cover,
+                                ),
+                                 borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                              ),
+                            ),
+                      
+                            Container(
+                              margin: EdgeInsets.fromLTRB(5, 5, 0,0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    myProducts[index]['name'],
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500
+                                    ),
+                                  ),
+                      
+                                  Text(
+                                    "anyaman",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54
+                                    ),
+                                  ),
+                      
+                                  Text(
+                                    "Rp.200.000",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.deepOrange,
+                                      fontWeight: FontWeight.w600
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
                     );
                 }),
-      
-      
               ],
             ),
           ),
         ),
+      ),
+
+       bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_rounded),
+              label: 'Fovorit',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart_rounded),
+              label: 'Pembelian',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_pin),
+              label: 'Profile',
+            ),
+          ],
       ),
     );
   }
