@@ -17,6 +17,8 @@ use App\Http\Controllers\API\MarchendiseController;
 
 Route::get('/home', [MarchendiseController::class, 'index']);
 Route::post('/store', [MarchendiseController::class, 'store']);
+Route::get('/show/{id}', [MarchendiseController::class, 'show']);
+Route::post('/edit/{id}', [MarchendiseController::class, 'edit']);
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

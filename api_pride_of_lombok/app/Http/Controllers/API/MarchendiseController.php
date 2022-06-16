@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Marchendise;
 use App\Helpers\ApiFormatter;
 use App\Http\Controllers\Controller;
-use Exception;
 use Illuminate\Support\Facades\Validator;
 
 class MarchendiseController extends Controller
@@ -47,7 +46,7 @@ class MarchendiseController extends Controller
     {
       
         // validasi data
-        $validated_data = Validator::make($request->all(), [ 
+        $validation = Validator::make($request->all(), [ 
             'nama' =>'required|max:128',
             'jenis' =>'required|max:128',
             'deskripsi' =>'required|max:5000',
@@ -55,8 +54,8 @@ class MarchendiseController extends Controller
             'gambar' => 'required|mimes:jpg,bmp,png'
         ]);
 
-        if($validated_data->fails()){
-            return ApiFormatter::createApi(200, 'Success', $validated_data->errors()); 
+        if($validation->fails()){
+            return ApiFormatter::createApi(400, 'Failed', $validation->errors()); 
         }else {
               // Upload gambar 
               $file = $request->file('gambar');
@@ -66,10 +65,10 @@ class MarchendiseController extends Controller
               // Buat object data marchendise
               $marchendise = new Marchendise();
       
-              $marchendise->nama = $validated_data['nama'];
-              $marchendise->jenis = $validated_data['jenis'];
-              $marchendise->deskripsi = $validated_data['deskripsi'];
-              $marchendise->harga = $validated_data['harga'];
+              $marchendise->nama = $request['nama'];
+              $marchendise->jenis = $request['jenis'];
+              $marchendise->deskripsi = $request['deskripsi'];
+              $marchendise->harga = $request['harga'];
               $marchendise->gambar = $file_name;
       
               # save data
@@ -88,7 +87,8 @@ class MarchendiseController extends Controller
      */
     public function show($id)
     {
-        //
+        $marchendise = Marchendise::findOrFail($id);
+        return ApiFormatter::createApi(200, 'Success', $marchendise);
     }
 
     /**
@@ -97,9 +97,47 @@ class MarchendiseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
-        //
+        // validasi data
+        $validation = Validator::make($request->all(), [ 
+            'nama' =>'required|max:128',
+            'jenis' =>'required|max:128',
+            'deskripsi' =>'required|max:5000',
+            'harga' =>'required|integer|digits_between:1,20',
+            'gambar' => 'required'
+        ]);
+
+        if($validation->fails()){
+            return ApiFormatter::createApi(400, 'Failed', $validation->errors()); 
+        }else {
+            // get data saat ini
+            $marchendise = Marchendise::findOrFail($id);
+
+            // check gambar baru di upload atau tidak
+            if(!($request->hasFile('gambar'))){ 
+                // gunakan gambar lama
+                $file_name = $marchendise->gambar;
+            }else {
+                // Upload gambar baru
+                $file = $request->file('gambar');
+                $file_name = $file->getClientOriginalName();
+                $file->move(public_path('/images/marchendise/'), $file_name); 
+            }
+
+            // Update data
+            $marchendise->nama = $request['nama'];
+            $marchendise->jenis = $request['jenis'];
+            $marchendise->deskripsi = $request['deskripsi'];
+            $marchendise->harga = $request['harga'];
+            $marchendise->gambar = $file_name;
+
+            //  save data
+            $marchendise->save();
+
+            return ApiFormatter::createApi(200, 'Success', $marchendise); 
+        }
+ 
     }
 
     /**

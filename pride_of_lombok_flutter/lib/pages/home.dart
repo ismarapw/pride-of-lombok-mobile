@@ -14,6 +14,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -28,7 +29,7 @@ class _HomeState extends State<Home> {
                       "Hai Ismar.",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 24,
                       ),
                     ),
       
@@ -37,6 +38,7 @@ class _HomeState extends State<Home> {
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 14,
+                        fontWeight: FontWeight.w500
                       ),
                     )
                   ],
@@ -77,25 +79,34 @@ class _HomeState extends State<Home> {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: ScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 200,
                       crossAxisSpacing: 10,
-                      childAspectRatio: 0.9,
-                      mainAxisSpacing: 10
+                      childAspectRatio: 0.8,
+                      mainAxisSpacing: 10,
                   ),
                   itemCount: myProducts.length,
                   itemBuilder: (BuildContext ctx, index) {
                     return Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: Colors.grey.withOpacity(.15),
+                          width: 1,
+                        ),
                       ),
+
                       child: InkWell(
-                        onTap: (){print(myProducts[index]['name']);},
+                        onTap: (){
+                          print(myProducts[index]['name']);
+                          Navigator.pushNamed(context, '/detail');
+                        },
+
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Container(
-                              height: 95,
+                              height: 100,
                               decoration: BoxDecoration(
                                 image: DecorationImage(
                                   image: AssetImage("/images/marchendise/anyaman_ketak.jpg"),
@@ -106,7 +117,7 @@ class _HomeState extends State<Home> {
                             ),
                       
                             Container(
-                              margin: EdgeInsets.fromLTRB(5, 5, 0,0),
+                              margin: EdgeInsets.fromLTRB(7, 15, 0,0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
