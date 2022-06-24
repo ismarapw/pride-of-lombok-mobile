@@ -72,7 +72,7 @@ class _PesananState extends State<Pesanan> {
                                        SizedBox(height: 10),
                                        Container(
                                           height: 150,
-                                          width: 200,
+                                          width: double.infinity,
                                           decoration: BoxDecoration(
                                             image: DecorationImage(
                                               image: NetworkImage("$baseURL/images/marchendise/"+pesananMasuk[index]['gambar']),

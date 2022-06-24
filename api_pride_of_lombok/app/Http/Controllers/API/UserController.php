@@ -47,7 +47,7 @@ class UserController extends Controller
 			
             return ApiFormatter::createApi(200, 'success', Auth::user());
         }else {
-            return ApiFormatter::createApi(401, 'failed', "Username atau password Salah");
+            return ApiFormatter::createApi(400, 'failed', ["not valid" => ["Username atau password Salah"]]);
         }
         
     }
