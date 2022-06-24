@@ -34,6 +34,8 @@ class _RiwayatState extends State<Riwayat> {
                     fontSize: 22)
                   ),
 
+                  SizedBox(height: 15,),
+
                 FutureBuilder(
                    // secara async ambil data pesanan yang masuk dari semua user dengan API
                   future: getRiwayatBeli(globals.userId),
@@ -45,6 +47,7 @@ class _RiwayatState extends State<Riwayat> {
                       // Tampilkan data riwayat pembelian pada halaman
                       return ListView.builder(
                           shrinkWrap: true,
+                          physics: ScrollPhysics(),
                           itemCount: riwayatPembelian.length,
                           itemBuilder: (context,index){
                             return Container(

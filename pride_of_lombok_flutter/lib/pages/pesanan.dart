@@ -33,6 +33,8 @@ class _PesananState extends State<Pesanan> {
                     fontSize: 22)
                   ),
 
+                  SizedBox(height: 15,),
+
                 FutureBuilder(
                   // secara async ambil data pesanan yang masuk dari semua user dengan API
                   future: getPesananMasuk(),
@@ -44,6 +46,7 @@ class _PesananState extends State<Pesanan> {
                       // Tampilkan data pesanan pada halaman
                       return ListView.builder(
                           shrinkWrap: true,
+                          physics: ScrollPhysics(),
                           itemCount: pesananMasuk.length,
                           itemBuilder: (context,index){
                             return Container(
