@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.pride_of_lombok_flutter">
+   <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="pride_of_lombok_flutter"
         android:name="${applicationName}"

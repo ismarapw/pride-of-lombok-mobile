@@ -2,25 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:pride_of_lombok_flutter/services/baseURL.dart';
-import 'package:pride_of_lombok_flutter/services/session.dart' as globals;
+import 'package:pride_of_lombok_flutter/services/session.dart' as session;
 
-class Home extends StatefulWidget {
+class Admin extends StatefulWidget {
   @override
-  State<Home> createState() => _HomeState();
+  State<Admin> createState() => _AdminState();
 }
 
-class _HomeState extends State<Home> {
-  
-  // variabel penampung nilai field cari
-  var cariTextController = TextEditingController();
-  
-  // fungsi untuk mengambil data user dari API
+class _AdminState extends State<Admin> {
+
+  // Fungsi untuk mendapatkan info User dari API
   getUser(id) async {
     var response =  await http.get(Uri.parse("$baseURL/api/get-user/$id"));
     return jsonDecode(response.body);
   }
 
-  // fungsi untuk mengambil data semua marchendise
+  // Fungsi untuk get semua marchendise dari API
   getAllMarchendise() async {
     var response =  await http.get(Uri.parse("$baseURL/api/get-all-marchendise"));
     return jsonDecode(response.body);
@@ -32,6 +29,12 @@ class _HomeState extends State<Home> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/tambahMarchendise');
+        },
+        child: Icon(Icons.add),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -43,14 +46,12 @@ class _HomeState extends State<Home> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     FutureBuilder(
-                      // Secara async, ambil data user dengan API
-                      future: getUser(globals.userId),
+                       // Bagian pada halaman ini akan dijalankan secara async dalam mengambil data user dari API
+                      future: getUser(session.userId),
                       builder: ((context, snapshot) {
                         if(snapshot.hasData){
-                          // jika ada data user yang didapat, maka ambil data usernamenya
+                          // Jika ada data yang didapat maka tampilkan username dari user
                           var username = (snapshot.data as Map)['data']['username'];
-
-                          // tampilkan username pada halaman
                           return  Text(
                             "Hai $username.",
                             style: TextStyle(
@@ -59,16 +60,17 @@ class _HomeState extends State<Home> {
                             ),
                           );
                         }else {
-                          // selama mengambil data dari API, tampilkan loading UI
+                          // Selama belum dapat data dari API, tampilkan loading UI
                            return Center (
                             child: CircularProgressIndicator()
                           );
                         }
                       })
                     ),
+                   
       
                     Text(
-                      "Kuy cari oleh-oleh khas Lombok",
+                      "Sebagai Admin mari atur marchendise Mu.",
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 14,
@@ -80,31 +82,8 @@ class _HomeState extends State<Home> {
       
                 SizedBox(height: 20),
       
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Cari barang disini",
-                    labelStyle: TextStyle(
-                      fontSize: 14,
-                    ),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.search, color: Colors.green,),
-                      onPressed: (){
-                        if(cariTextController.text != ''){
-                          Navigator.pushNamed(context, '/pencarian', arguments: {'value' : cariTextController.text});
-                        }
-                      },
-                    ),
-                  ),
-                  controller: cariTextController,
-                ),
-      
-                SizedBox(height: 20),
-      
                 Text(
-                  "Marchendise Terbaru",
+                  "Daftar Marchendise",
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -115,14 +94,13 @@ class _HomeState extends State<Home> {
                 SizedBox(height: 15),
 
                 FutureBuilder(
-                  // secara sycn ambil semua data marchendise dengan API
+                  // Bagian pada halaman ini akan dijalankan secara async dalam mengambil data marchendise dari API
                   future: getAllMarchendise(),
                   builder: ((context,snapshot){
+                    // Jika ada data yang didapat maka tampilkan daftar marchendise
                     if(snapshot.hasData){
-                      // jika ada data yang didapat, ambil data marchendise
+                      // ambil data marchendise dari API
                       var marchendises = (snapshot.data as Map)['data'];
-
-                      // tampilkan semua data marcehndise dengan grid view
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: ScrollPhysics(),
@@ -145,8 +123,7 @@ class _HomeState extends State<Home> {
                     
                             child: InkWell(
                               onTap: (){
-                                // print(myProducts[index]['name']);
-                                Navigator.pushNamed(context, '/detail', arguments: {'marchendiseId' : marchendises[index]['id']});
+                                Navigator.pushNamed(context, '/preview', arguments: {'marchendiseId' : marchendises[index]['id']});
                               },
                     
                               child: Column(
@@ -202,14 +179,13 @@ class _HomeState extends State<Home> {
                           );
                       });
                     }else{
-                      // selama mengambil data, tampilkan loading UI
+                      // Selama belum dapat data dari API, tampilkan loading UI
                       return Center (
                         child: CircularProgressIndicator()
                       );
                     }
-                  }
-                )
-                )               
+                  })
+                ),
               ],
             ),
           ),

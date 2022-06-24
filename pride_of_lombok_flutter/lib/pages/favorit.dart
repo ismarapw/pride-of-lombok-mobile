@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:pride_of_lombok_flutter/services/baseURL.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:pride_of_lombok_flutter/services/baseURL.dart';
 import 'package:pride_of_lombok_flutter/services/session.dart' as globals;
 
-class Home extends StatefulWidget {
+class Favorit extends StatefulWidget {
   @override
-  State<Home> createState() => _HomeState();
+  State<Favorit> createState() => _FavoritState();
 }
 
-class _HomeState extends State<Home> {
-  
-  // variabel penampung nilai field cari
-  var cariTextController = TextEditingController();
-  
+class _FavoritState extends State<Favorit> {
+
   // fungsi untuk mengambil data user dari API
   getUser(id) async {
     var response =  await http.get(Uri.parse("$baseURL/api/get-user/$id"));
     return jsonDecode(response.body);
   }
 
-  // fungsi untuk mengambil data semua marchendise
-  getAllMarchendise() async {
-    var response =  await http.get(Uri.parse("$baseURL/api/get-all-marchendise"));
+  // Fungsi untuk mengambil info marchendise berdasarkan id pada API
+  getMarchendiseFavorit(idUser) async {
+    var response =  await http.get(Uri.parse("$baseURL/api/get-marchendise-favorit/"+idUser.toString()));
+    return jsonDecode(response.body);
+  }
+
+  // Fungsi untuk menghapus data marchendise
+  hapusMarchendiseFavorit(idUser, idMarchendise) async{
+    var response =  await http.post(Uri.parse("$baseURL/api/delete-marchendise-favorit/"+idUser.toString()+"/"+idMarchendise.toString()));
     return jsonDecode(response.body);
   }
 
@@ -34,7 +37,7 @@ class _HomeState extends State<Home> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,22 +56,22 @@ class _HomeState extends State<Home> {
                           // tampilkan username pada halaman
                           return  Text(
                             "Hai $username.",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold, 
                               fontSize: 24,
                             ),
                           );
                         }else {
                           // selama mengambil data dari API, tampilkan loading UI
-                           return Center (
-                            child: CircularProgressIndicator()
+                           return const Center (
+                            child: const CircularProgressIndicator()
                           );
                         }
                       })
                     ),
       
-                    Text(
-                      "Kuy cari oleh-oleh khas Lombok",
+                    const Text(
+                      "Langsung Checkout aja, nanti stoknya habis ><",
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 14,
@@ -78,58 +81,36 @@ class _HomeState extends State<Home> {
                   ],
                 ),
       
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
       
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Cari barang disini",
-                    labelStyle: TextStyle(
-                      fontSize: 14,
-                    ),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.search, color: Colors.green,),
-                      onPressed: (){
-                        if(cariTextController.text != ''){
-                          Navigator.pushNamed(context, '/pencarian', arguments: {'value' : cariTextController.text});
-                        }
-                      },
-                    ),
-                  ),
-                  controller: cariTextController,
-                ),
-      
-                SizedBox(height: 20),
-      
-                Text(
-                  "Marchendise Terbaru",
-                  style: TextStyle(
+                const Text(
+                  "Barang Favorit Anda",
+                  style: const TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
 
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
+                
                 FutureBuilder(
-                  // secara sycn ambil semua data marchendise dengan API
-                  future: getAllMarchendise(),
+                  // Secara async, ambil data favorit user dengan API
+                  future: getMarchendiseFavorit(globals.userId),
                   builder: ((context,snapshot){
                     if(snapshot.hasData){
-                      // jika ada data yang didapat, ambil data marchendise
+                      // ambil data marcehnsie favorit
                       var marchendises = (snapshot.data as Map)['data'];
 
-                      // tampilkan semua data marcehndise dengan grid view
+                      // tampilkan data marchendise
                       return GridView.builder(
                         shrinkWrap: true,
-                        physics: ScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        physics: const ScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                             maxCrossAxisExtent: 200,
                             crossAxisSpacing: 10,
-                            childAspectRatio: 0.8,
+                            childAspectRatio: 0.75,
                             mainAxisSpacing: 10,
                         ),
                         itemCount: marchendises.length,
@@ -145,8 +126,8 @@ class _HomeState extends State<Home> {
                     
                             child: InkWell(
                               onTap: (){
-                                // print(myProducts[index]['name']);
-                                Navigator.pushNamed(context, '/detail', arguments: {'marchendiseId' : marchendises[index]['id']});
+                                print(marchendises);
+                                Navigator.pushNamed(context, '/detail', arguments: {'marchendiseId' : marchendises[index]['merch_id']});
                               },
                     
                               child: Column(
@@ -159,18 +140,18 @@ class _HomeState extends State<Home> {
                                         image: NetworkImage("$baseURL/images/marchendise/"+marchendises[index]['gambar']),
                                         fit: BoxFit.cover,
                                       ),
-                                      borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
                                     ),
                                   ),
                             
                                   Container(
-                                    margin: EdgeInsets.fromLTRB(7, 15, 0,0),
+                                    margin: const EdgeInsets.fromLTRB(7, 15, 0,0),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           marchendises[index]['nama'],
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500
                                           ),
@@ -179,20 +160,44 @@ class _HomeState extends State<Home> {
                             
                                         Text(
                                           marchendises[index]['jenis'],
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.black54
                                           ),
                                         ),
-                            
-                                        Text(
-                                          "Rp. "+ marchendises[index]['harga'].toString(),
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.deepOrange,
-                                            fontWeight: FontWeight.w600
-                                          ),
-                                        )
+
+                                        Row(
+                                          children: <Widget>[                   
+                                            Expanded(
+                                              child: Text(
+                                                "Rp. "+ marchendises[index]['harga'].toString(),
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.deepOrange,
+                                                  fontWeight: FontWeight.w600
+                                                ),
+                                              ),
+                                            ),
+                                        
+                                            IconButton(
+                                              color: Colors.red,
+                                              onPressed: () async{
+                                                var result = await hapusMarchendiseFavorit(globals.userId, marchendises[index]['merch_id']);
+                                                if(result['code'] == 200){
+                                                  setState(() {
+                                                     ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(result['data']),
+                                                      )
+                                                    );
+                                                  });
+                                                }
+                                              }, 
+                                              icon: const Icon(Icons.delete_forever_rounded),
+                                            ),
+                                          ]
+                                        ),
+
                                       ],
                                     ),
                                   )
@@ -202,19 +207,19 @@ class _HomeState extends State<Home> {
                           );
                       });
                     }else{
-                      // selama mengambil data, tampilkan loading UI
-                      return Center (
-                        child: CircularProgressIndicator()
+                      // tampilkan loading UI selama mengambil data secara async
+                      return const Center (
+                        child: const CircularProgressIndicator()
                       );
                     }
                   }
                 )
-                )               
+                )       
               ],
             ),
           ),
         ),
-      )
+      ),
     );
   }
 }

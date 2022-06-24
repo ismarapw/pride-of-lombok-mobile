@@ -4,34 +4,39 @@ import 'dart:convert';
 import 'package:pride_of_lombok_flutter/services/baseURL.dart';
 import 'package:pride_of_lombok_flutter/services/session.dart' as globals;
 
-class Home extends StatefulWidget {
+class Pencarian extends StatefulWidget {
   @override
-  State<Home> createState() => _HomeState();
+  State<Pencarian> createState() => _PencarianState();
 }
 
-class _HomeState extends State<Home> {
-  
-  // variabel penampung nilai field cari
-  var cariTextController = TextEditingController();
-  
-  // fungsi untuk mengambil data user dari API
-  getUser(id) async {
-    var response =  await http.get(Uri.parse("$baseURL/api/get-user/$id"));
+class _PencarianState extends State<Pencarian> {
+
+  // Fungsi cari berdasarkan input ke API
+  getMarchendiseBySearch(value) async {
+    var response = await http.get(Uri.parse("$baseURL/api/cari-marchendise/$value"));
     return jsonDecode(response.body);
   }
 
-  // fungsi untuk mengambil data semua marchendise
-  getAllMarchendise() async {
-    var response =  await http.get(Uri.parse("$baseURL/api/get-all-marchendise"));
-    return jsonDecode(response.body);
-  }
 
 
   @override
   Widget build(BuildContext context) {
+    // Ambil data dari paramater data halaman sebelumnya
+    var data = ModalRoute.of(context)!.settings.arguments as Map;
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text(
+          "Hasil Pencarian",
+          style: TextStyle(
+            fontSize: 16,
+          ),
+        ),
+        centerTitle: true,
+        
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -42,35 +47,9 @@ class _HomeState extends State<Home> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    FutureBuilder(
-                      // Secara async, ambil data user dengan API
-                      future: getUser(globals.userId),
-                      builder: ((context, snapshot) {
-                        if(snapshot.hasData){
-                          // jika ada data user yang didapat, maka ambil data usernamenya
-                          var username = (snapshot.data as Map)['data']['username'];
-
-                          // tampilkan username pada halaman
-                          return  Text(
-                            "Hai $username.",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold, 
-                              fontSize: 24,
-                            ),
-                          );
-                        }else {
-                          // selama mengambil data dari API, tampilkan loading UI
-                           return Center (
-                            child: CircularProgressIndicator()
-                          );
-                        }
-                      })
-                    ),
-      
                     Text(
-                      "Kuy cari oleh-oleh khas Lombok",
+                      "Hasil pencarian untuk " + "'"+ data['value'] + "'",
                       style: TextStyle(
-                        color: Colors.black54,
                         fontSize: 14,
                         fontWeight: FontWeight.w500
                       ),
@@ -78,51 +57,18 @@ class _HomeState extends State<Home> {
                   ],
                 ),
       
-                SizedBox(height: 20),
-      
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Cari barang disini",
-                    labelStyle: TextStyle(
-                      fontSize: 14,
-                    ),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.search, color: Colors.green,),
-                      onPressed: (){
-                        if(cariTextController.text != ''){
-                          Navigator.pushNamed(context, '/pencarian', arguments: {'value' : cariTextController.text});
-                        }
-                      },
-                    ),
-                  ),
-                  controller: cariTextController,
-                ),
-      
-                SizedBox(height: 20),
-      
-                Text(
-                  "Marchendise Terbaru",
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-
+              
                 SizedBox(height: 15),
 
                 FutureBuilder(
-                  // secara sycn ambil semua data marchendise dengan API
-                  future: getAllMarchendise(),
+                  // jalankan fungsi cari secara asycn
+                  future: getMarchendiseBySearch( data['value']),
                   builder: ((context,snapshot){
                     if(snapshot.hasData){
-                      // jika ada data yang didapat, ambil data marchendise
+                      // ambil data yang didapat
                       var marchendises = (snapshot.data as Map)['data'];
 
-                      // tampilkan semua data marcehndise dengan grid view
+                      // tampilkan data yang didapat
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: ScrollPhysics(),
@@ -202,7 +148,7 @@ class _HomeState extends State<Home> {
                           );
                       });
                     }else{
-                      // selama mengambil data, tampilkan loading UI
+                      // loading selama async
                       return Center (
                         child: CircularProgressIndicator()
                       );

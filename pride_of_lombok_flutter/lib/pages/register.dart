@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:pride_of_lombok_flutter/services/baseURL.dart';
+
+
 
 class Register extends StatefulWidget {
   @override
@@ -6,6 +12,35 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  // variable untuk nilai form
+  var usernameTextController = TextEditingController();
+  var emailTextController = TextEditingController();
+  var passwordTextController = TextEditingController();
+
+  // Fungsi registrasi via API
+  register () async {
+    // Ambil Data dari setiap field form 
+    var data = {
+      'username' : usernameTextController.text,
+      'email' : emailTextController.text,
+      'password' : passwordTextController.text
+    };
+
+    // Kirim request dengan method Post dari data form
+    var response = await http.post(
+      Uri.parse(baseURL+"/api/register"),
+      body: json.encode(data),
+      headers: {
+        'Content-type' : 'application/json',
+        'Accept' : 'application/json'
+      }
+    );
+
+    // Kembalikan nilai json
+    return jsonDecode(response.body);
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,15 +55,15 @@ class _RegisterState extends State<Register> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Image.asset(
-                  "/images/logo/logo.png",
+                  "assets/images/logo/logo.png",
                   width: 37,
                   height: 32,
                 
                 ),
 
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
 
-                Text(
+                const Text(
                   "Pride of Lombok",
                   style: TextStyle(
                     fontSize: 18,
@@ -38,9 +73,9 @@ class _RegisterState extends State<Register> {
               ],
             ),
 
-            SizedBox(height:20),
+            const SizedBox(height:20),
 
-            Text(
+            const Text(
               "Register",
               style: TextStyle (
                 fontSize: 18,
@@ -48,59 +83,110 @@ class _RegisterState extends State<Register> {
               ),            
             ),
 
-            SizedBox(height:30),
+            const SizedBox(height:30),
 
             Form(
               child: Column(
                 children: <Widget>[
                   TextFormField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "Masukkan Username",
                       border: OutlineInputBorder()
                     ),
+                    controller: usernameTextController,
                   ),
 
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
 
                   TextFormField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText:"Masukkan Email",
                       border: OutlineInputBorder()
                     ),
+                    controller: emailTextController,
                   ),
 
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
 
                   TextFormField(
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText:"Masukkan Password",
                       border: OutlineInputBorder()
                     ),
+                    controller: passwordTextController,
                   ),
 
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
 
                   Container(
                     width: double.infinity,
                     height: 45,
                     child: ElevatedButton(
-                      onPressed: (){
-                        
+                      onPressed: ()async{
+                        // ambil hasil json dari fungsi register
+                        var response_json = await register();
+
+                        // Jika code 400, artinya ada nilai form yang tidak valid
+                        if(response_json['code'] == 400){
+                          // Munculkan alert dengan hasil validasi dari API
+                          Alert(
+                            context: context,
+                            style: const AlertStyle(
+                              animationType: AnimationType.shrink
+                            ),
+                            type: AlertType.error,
+                            title: "Registrasi Gagal",
+                            desc: response_json['data'].values.toList()[0][0],
+                            buttons: [
+                              DialogButton(
+                                color: Colors.red,
+                                child: const Text(
+                                  "Okay",
+                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                              )
+                            ],
+                          ).show();
+                        }else {
+                          // Munculkan alert bahwa registrasi berhasil dan arahkan ke halaman login
+                          Alert(
+                            context: context,
+                            style: const AlertStyle(
+                              animationType: AnimationType.shrink
+                            ),
+                            type: AlertType.success,
+                            title: "Registrasi Berhasil",
+                            desc: "Silahkan login terlebih dahulu",
+                            buttons: [
+                              DialogButton(
+                                color: Colors.green,
+                                child: const Text(
+                                  "Okay",
+                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                ),
+                                // arahkan ke halaman login
+                                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                              )
+                            ],
+                          ).show();
+                        }
+                    
                       }, 
-                      child: Text("Register",style: TextStyle(fontSize: 16)),
+                      child: const Text("Register",style: TextStyle(fontSize: 16)),
                       style: ElevatedButton.styleFrom(
                         primary: Colors.green,
                       ),
                     ),
                   ),
 
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Text(
+                      const Text(
                         "Sudah punya akun?",
                         style: TextStyle(
                           fontSize: 12,
@@ -111,7 +197,7 @@ class _RegisterState extends State<Register> {
                         onPressed: (){
                           Navigator.pushNamed(context, "/");
                         }, 
-                        child:  Text(
+                        child:  const Text(
                           "Login",
                           style: TextStyle(
                             fontSize: 12,

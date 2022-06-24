@@ -1,38 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:pride_of_lombok_flutter/services/baseURL.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:pride_of_lombok_flutter/services/session.dart' as globals;
+import 'package:pride_of_lombok_flutter/services/baseURL.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
-class Detail extends StatefulWidget {
+class Preview extends StatefulWidget {
   @override
-  State<Detail> createState() => _DetailState();
+  State<Preview> createState() => _PreviewState();
 }
 
-class _DetailState extends State<Detail> {
+class _PreviewState extends State<Preview> {
 
   // Fungsi untuk mengambil info marchendise berdasarkan id pada API
-  getMerchendiseById(id) async {
+  getMerchendiseById (id) async {
     var response =  await http.get(Uri.parse("$baseURL/api/get-marchendise-by-id/"+id.toString()));
     return jsonDecode(response.body);
   }
 
-  // Fungsi untuk menambhkan marchendise menjadi favorit
-  tambahFavorit(idUser, idMarchendise) async {
-    var response = await http.post(Uri.parse("$baseURL/api/tambah-favorit/"+idUser.toString()+"/"+idMarchendise.toString()));
-    return jsonDecode(response.body);
+  // Fungsi untuk menghapus suatu marchendise dengan API
+  hapusMarchendiseById(id) async {
+    var response = await http.get(Uri.parse("$baseURL/api/delete-marchendise/"+id.toString()));
+
+    return jsonDecode(response.body);  
   }
 
   @override
   Widget build(BuildContext context) {
-    // ambil data dari paramater yang dikirimkan pada halaman sebelumnya
+    // Ambil data dari paramater data halaman sebelumnya
     var data = ModalRoute.of(context)!.settings.arguments as Map;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          "Detail Marchendise",
+          "Preview Marchendise",
           style: TextStyle(
             fontSize: 16,
           ),
@@ -70,19 +71,13 @@ class _DetailState extends State<Detail> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                       Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                marchendise['nama'],
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 24
-                                ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          marchendise['nama'],
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24
+                          ),
                         ),
 
                         SizedBox(height: 5),
@@ -97,16 +92,19 @@ class _DetailState extends State<Detail> {
                         ),
 
                         SizedBox(height: 10),
+
+                        
                         Text(
                          "Rp." + marchendise['harga'].toString(),
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w500,
                             fontSize: 18,
                             color: Colors.deepOrange
                           ),
                         ),
 
                         SizedBox(height: 10),
+
 
                         Text(
                           "Deskripsi",
@@ -131,7 +129,7 @@ class _DetailState extends State<Detail> {
                 ]
               );
             }else {
-              // tampilkan loading selama mengambil data dari API
+               // Selama belum dapat data dari API, tampilkan loading UI
                return Center (
                   child: CircularProgressIndicator()
               );
@@ -141,23 +139,23 @@ class _DetailState extends State<Detail> {
       ),
 
       bottomNavigationBar: BottomAppBar(
-          child: Container(
-            height: 65.0,
-            padding: EdgeInsets.fromLTRB(15, 8, 12, 5),
-            width: double.maxFinite,
-            child: Row(
+        child: Container(
+          height: 65.0,
+          padding: EdgeInsets.fromLTRB(15, 8, 12, 5),
+          width: double.maxFinite,
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               Expanded(
                 child: SizedBox(
-                  height: 40,
+                  height: 45,
                   child: ElevatedButton(
                     onPressed: (){
-                      Navigator.pushNamed(context, '/bayar', arguments: {'marchendiseId' : data['marchendiseId']});
+                      Navigator.pushNamed(context, '/ubahMarchendise', arguments: {'marchendiseId' : data['marchendiseId']});
                     }, 
                     child: Text(
-                      "Beli Langsung",
-                      style: TextStyle(fontSize: 14),
+                      "Edit",
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
@@ -167,41 +165,74 @@ class _DetailState extends State<Detail> {
     
               Expanded(
                 child: SizedBox(
-                  height: 40,
+                  height: 45,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Colors.green, width: 1),
                     ),
-                    onPressed: () async{
-                      // ambil hasil dari API 
-                      var result_json = await tambahFavorit(globals.userId, data['marchendiseId']);
+                    onPressed: () async {
+                      // Hapus marcehndise dengan API
+                      var response_json = await hapusMarchendiseById(data['marchendiseId']);    
 
-                      // jika mengembalikan code 300, maka artinya data sudah ada di favorit
-                      if(result_json['code'] == 300){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Barang sudah ada di favorit"),
-                          )
-                        );
+                      // Tampilkan elert jika hapus barang berhasil
+                      if(response_json['code'] == 200){
+                        Alert(
+                          context: context,
+                          style: const AlertStyle(
+                            animationType: AnimationType.shrink
+                          ),
+                          type: AlertType.success,
+                          title: "Informasi Hapus",
+                          desc: "Barang berhasil dihapus",
+                          buttons: [
+                            DialogButton(
+                              color: Colors.green,
+                              child: const Text(
+                                "Oke",
+                                style: TextStyle(color: Colors.white, fontSize: 14),
+                              ),
+                              onPressed: () {
+                                Navigator.pushReplacementNamed(context, "/navbar");
+                              } 
+                            ),
+                          ]
+                        ).show();
                       }else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Barang berhasil ditambahkan menjadi favorit"),
-                          )
-                        );
-                      }
+                        // Tampilkan hapus gagal jika penghapusan gagal
+                        Alert(
+                          context: context,
+                          style: const AlertStyle(
+                            animationType: AnimationType.shrink
+                          ),
+                          type: AlertType.warning,
+                          title: "Informasi Hapus",
+                          desc: "Barang gagal Dihapus",
+                          buttons: [
+                            DialogButton(
+                              color: Colors.red,
+                              child: const Text(
+                                "Kembali",
+                                style: TextStyle(color: Colors.white, fontSize: 14),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              } 
+                            ),
+                          ]
+                        ).show();
+                      }         
                     },        
                     child: Text(
-                      "Tambah ke Favorit",
-                      style: TextStyle(fontSize: 14),
+                      "Hapus",
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
               ),
             ],
           ),
-        ),
+        )
       )
-    );
+    );    
   }
 }
